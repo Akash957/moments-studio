@@ -5,7 +5,9 @@ cd /app
 
 echo "=== Starting Laravel Railway Production Entrypoint ==="
 
-LISTEN_PORT="${PORT:-8080}"
+# Force LISTEN_PORT to 8080 to match Railway Public Networking Target Port 8080
+LISTEN_PORT=8080
+export PORT=8080
 
 # Clean quotes from env vars if present
 DB_HOST=$(echo "${DB_HOST:-$MYSQLHOST}" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
@@ -105,5 +107,5 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
-echo "Starting Artisan Serve on 0.0.0.0:${LISTEN_PORT}..."
-exec php artisan serve --host=0.0.0.0 --port="${LISTEN_PORT}"
+echo "Starting Artisan Serve strictly on 0.0.0.0:8080..."
+exec php artisan serve --host=0.0.0.0 --port=8080
