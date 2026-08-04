@@ -1,0 +1,15 @@
+.git
+node_modules
+.env
+.env.backup
+.env.production
+.history
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+phpunit.xml
+.editorconfig
+.gitattributes
+README.md
