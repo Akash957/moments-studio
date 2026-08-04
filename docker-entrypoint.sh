@@ -5,6 +5,9 @@ cd /app
 
 echo "=== Starting Laravel Railway Entrypoint ==="
 
+# Force Port to 8080 to match Railway Networking Target Port
+export PORT=8080
+
 # Auto-detect Railway MySQL default environment variables if present
 if [ -n "$MYSQLHOST" ]; then
     export DB_HOST="${DB_HOST:-$MYSQLHOST}"
@@ -39,7 +42,7 @@ APP_NAME="${APP_NAME:-Moments Studio}"
 APP_ENV=${APP_ENV}
 APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG}
-APP_URL=${APP_URL:-https://moments-studio-production.up.railway.app}
+APP_URL=${APP_URL:-https://love-studios.up.railway.app}
 
 DB_CONNECTION=${DB_CONNECTION}
 DB_HOST=${DB_HOST}
@@ -81,5 +84,5 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
-echo "Starting PHP Artisan Serve on port ${PORT:-8080}..."
-exec php artisan serve --host=0.0.0.0 --port="${PORT:-8080}"
+echo "Starting PHP Web Server on port 8080..."
+exec php -S 0.0.0.0:8080 -t public public/index.php
