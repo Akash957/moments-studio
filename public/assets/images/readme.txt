@@ -1,0 +1,1 @@
+Love Studios Assets Folder
