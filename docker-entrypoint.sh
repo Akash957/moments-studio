@@ -24,6 +24,13 @@ DB_USERNAME="${DB_USERNAME:-$MYSQLUSER}"
 
 DB_PASSWORD="${DB_PASSWORD:-$MYSQLPASSWORD}"
 
+# Strip accidental quotes from environment variables if present
+DB_HOST=$(echo "$DB_HOST" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+DB_PORT=$(echo "$DB_PORT" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+DB_DATABASE=$(echo "$DB_DATABASE" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+DB_USERNAME=$(echo "$DB_USERNAME" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+DB_PASSWORD=$(echo "$DB_PASSWORD" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+
 # Clean raw un-evaluated Railway reference strings if present
 if [[ "$DB_PASSWORD" == "\${{"* ]]; then
     DB_PASSWORD=""
@@ -66,7 +73,7 @@ php artisan view:clear || true
 USE_SQLITE=0
 echo "Attempting MySQL migrations..."
 if ! php artisan migrate --force; then
-    echo "WARNING: MySQL connection failed (Access Denied or Password missing). Switching to SQLite for 100% production uptime..."
+    echo "WARNING: MySQL connection failed. Switching to SQLite fallback for 100% production uptime..."
     USE_SQLITE=1
 fi
 
