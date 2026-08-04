@@ -10,8 +10,9 @@ LISTEN_PORT="${PORT:-8080}"
 
 # Auto-detect & clean Railway MySQL variables
 DB_HOST="${DB_HOST:-$MYSQLHOST}"
-[ -z "$DB_HOST" ] && DB_HOST="${MYSQLHOST:-127.0.0.1}"
-[ "$DB_HOST" = "localhost" ] && DB_HOST="127.0.0.1"
+if [ -z "$DB_HOST" ] || [ "$DB_HOST" = "127.0.0.1" ] || [ "$DB_HOST" = "localhost" ]; then
+    DB_HOST="${MYSQLHOST:-mysql.railway.internal}"
+fi
 
 DB_PORT="${DB_PORT:-$MYSQLPORT}"
 [ -z "$DB_PORT" ] && DB_PORT="${MYSQLPORT:-3306}"
@@ -57,10 +58,21 @@ php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# Run database migrations
+# Attempt database migration with retry loop
 echo "Running migrations..."
-if ! php artisan migrate --force; then
-    echo "WARNING: Migration failed or database not ready yet. Continuing server startup..."
+MIGRATED=0
+for i in {1..3}; do
+    if php artisan migrate --force; then
+        MIGRATED=1
+        echo "Database migrations completed successfully!"
+        break
+    fi
+    echo "Migration attempt $i failed. Retrying in 2 seconds..."
+    sleep 2
+done
+
+if [ $MIGRATED -eq 0 ]; then
+    echo "WARNING: Could not complete migration automatically. Website will still start up..."
 fi
 
 # Cache config & routes for production speed
