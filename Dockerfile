@@ -1,4 +1,4 @@
-FROM php:8.3-cli AS base
+FROM php:8.3-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -16,11 +16,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20 LTS
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -31,21 +26,11 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# Copy package files and install node dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Copy the rest of the application
+# Copy the rest of the application (including pre-built assets)
 COPY . .
 
-# Run post-autoload-dump scripts
+# Run composer scripts
 RUN composer dump-autoload --optimize
-
-# Build frontend assets with Vite
-RUN npm run build
-
-# Remove node_modules after build to reduce image size
-RUN rm -rf node_modules
 
 # Create necessary directories
 RUN mkdir -p storage/logs \
@@ -66,7 +51,7 @@ RUN echo "memory_limit=256M" > /usr/local/etc/php/conf.d/custom.ini \
     && echo "display_errors=Off" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "log_errors=On" >> /usr/local/etc/php/conf.d/custom.ini
 
-# Expose port (Railway sets PORT env var)
+# Expose port
 EXPOSE 8080
 
 # Start script

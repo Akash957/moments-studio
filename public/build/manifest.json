@@ -1,0 +1,51 @@
+{
+  "_charts-l0sNRNKZ.js": {
+    "file": "assets/charts-l0sNRNKZ.js",
+    "name": "charts"
+  },
+  "_gallery-l0sNRNKZ.js": {
+    "file": "assets/gallery-l0sNRNKZ.js",
+    "name": "gallery"
+  },
+  "_gsap-l0sNRNKZ.js": {
+    "file": "assets/gsap-l0sNRNKZ.js",
+    "name": "gsap"
+  },
+  "_index-CzApALvg.js": {
+    "file": "assets/index-CzApALvg.js",
+    "name": "index"
+  },
+  "_vendor-DdaDH_LP.js": {
+    "file": "assets/vendor-DdaDH_LP.js",
+    "name": "vendor"
+  },
+  "resources/css/admin.css": {
+    "file": "assets/admin-tn0RQdqM.css",
+    "src": "resources/css/admin.css",
+    "isEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-Bnf_q2N7.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/admin.js": {
+    "file": "assets/admin-eQ0rs7bf.js",
+    "name": "admin",
+    "src": "resources/js/admin.js",
+    "isEntry": true,
+    "imports": [
+      "_index-CzApALvg.js"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CiblzRtR.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor-DdaDH_LP.js",
+      "_index-CzApALvg.js"
+    ]
+  }
+}
