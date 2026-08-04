@@ -5,65 +5,49 @@ cd /app
 
 echo "=== Starting Laravel Railway Entrypoint ==="
 
-# Force Port to 8080 to match Railway Networking Target Port
-export PORT=8080
+# Railway passes $PORT environment variable. Fallback to 8080 if not set.
+LISTEN_PORT="${PORT:-8080}"
 
-# Auto-detect Railway MySQL default environment variables if present
-if [ -n "$MYSQLHOST" ]; then
-    export DB_HOST="${DB_HOST:-$MYSQLHOST}"
-fi
-if [ -n "$MYSQLPORT" ]; then
-    export DB_PORT="${DB_PORT:-$MYSQLPORT}"
-fi
-if [ -n "$MYSQLDATABASE" ]; then
-    export DB_DATABASE="${DB_DATABASE:-$MYSQLDATABASE}"
-fi
-if [ -n "$MYSQLUSER" ]; then
-    export DB_USERNAME="${DB_USERNAME:-$MYSQLUSER}"
-fi
-if [ -n "$MYSQLPASSWORD" ]; then
-    export DB_PASSWORD="${DB_PASSWORD:-$MYSQLPASSWORD}"
-fi
-if [ -n "$MYSQL_URL" ]; then
-    export DB_URL="${DB_URL:-$MYSQL_URL}"
-fi
+# Auto-detect & clean Railway MySQL variables
+DB_HOST="${DB_HOST:-$MYSQLHOST}"
+[ -z "$DB_HOST" ] && DB_HOST="${MYSQLHOST:-127.0.0.1}"
+[ "$DB_HOST" = "localhost" ] && DB_HOST="127.0.0.1"
 
-# Fallback defaults if still empty
-export DB_CONNECTION="${DB_CONNECTION:-mysql}"
-export APP_ENV="${APP_ENV:-production}"
-export APP_DEBUG="${APP_DEBUG:-false}"
-export SESSION_DRIVER="${SESSION_DRIVER:-file}"
-export CACHE_STORE="${CACHE_STORE:-file}"
-export QUEUE_CONNECTION="${QUEUE_CONNECTION:-sync}"
+DB_PORT="${DB_PORT:-$MYSQLPORT}"
+[ -z "$DB_PORT" ] && DB_PORT="${MYSQLPORT:-3306}"
+
+DB_DATABASE="${DB_DATABASE:-$MYSQLDATABASE}"
+[ -z "$DB_DATABASE" ] && DB_DATABASE="${MYSQLDATABASE:-railway}"
+
+DB_USERNAME="${DB_USERNAME:-$MYSQLUSER}"
+[ -z "$DB_USERNAME" ] && DB_USERNAME="${MYSQLUSER:-root}"
+
+DB_PASSWORD="${DB_PASSWORD:-$MYSQLPASSWORD}"
+
+echo "Database Configuration:"
+echo "Host: $DB_HOST | Port: $DB_PORT | DB: $DB_DATABASE | User: $DB_USERNAME"
 
 # Construct runtime .env file for Laravel
 cat <<EOF > /app/.env
 APP_NAME="${APP_NAME:-Moments Studio}"
-APP_ENV=${APP_ENV}
-APP_KEY=${APP_KEY}
-APP_DEBUG=${APP_DEBUG}
+APP_ENV=${APP_ENV:-production}
+APP_KEY=${APP_KEY:-base64:/P1cA42ruPgrHuYjvK9/Kt50SKGIM95nKsu55D+W6cg=}
+APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-https://love-studios.up.railway.app}
 
-DB_CONNECTION=${DB_CONNECTION}
+DB_CONNECTION=mysql
 DB_HOST=${DB_HOST}
 DB_PORT=${DB_PORT}
 DB_DATABASE=${DB_DATABASE}
 DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
-${DB_URL:+DB_URL=${DB_URL}}
 
-SESSION_DRIVER=${SESSION_DRIVER}
-CACHE_STORE=${CACHE_STORE}
-QUEUE_CONNECTION=${QUEUE_CONNECTION}
+SESSION_DRIVER=file
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
 LOG_CHANNEL=stack
 LOG_LEVEL=error
 EOF
-
-# Generate APP_KEY if missing
-if [ -z "$APP_KEY" ]; then
-    echo "Generating APP_KEY..."
-    php artisan key:generate --force
-fi
 
 # Create storage symlink
 php artisan storage:link --force || true
@@ -84,5 +68,5 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
-echo "Starting PHP Web Server on port 8080..."
-exec php -S 0.0.0.0:8080 -t public public/index.php
+echo "Starting PHP Web Server on 0.0.0.0:${LISTEN_PORT}..."
+exec php -S 0.0.0.0:${LISTEN_PORT} -t public public/index.php
